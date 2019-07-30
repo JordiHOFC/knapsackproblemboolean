@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include<fstream>
 #include <vector>
 #include <math.h>
 #include <algorithm>
@@ -16,6 +17,8 @@ class AlgoritmoGenetico{
     
     double probDeMutacao;
     
+    int Ngeracoes;
+    
     vector<int>best;
     double FoBest;
     
@@ -28,7 +31,7 @@ class AlgoritmoGenetico{
     pmochila *prob;
 
     //construtor
-    AlgoritmoGenetico(int tamannhoPop, double probCruza, double probMutacao, string nomearq);
+    AlgoritmoGenetico(int tamannhoPop, int ngeracoes,double probCruza, double probMutacao, string nomearq);
     //destrutor
     virtual ~AlgoritmoGenetico();
 
@@ -36,9 +39,11 @@ class AlgoritmoGenetico{
     vector<vector<int>> cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2);
     vector<int>cruzamentoUniformeParametrizado(vector<int>&pai1,vector<int>&pai2);
     vector<int>mutacao(vector<int>individuo);
-    vector<int>selecaoRoleta();
-
+    vector<int>selecaoTorneio();
+    void avaliarPopulacao();
     void gerarPopulacaoInicial();
+    void cicloGeracional();
+    void imprimirFitnessPop();
     
 
 

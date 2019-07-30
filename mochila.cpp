@@ -33,7 +33,7 @@ void pmochila::mostrarItens(){
     }
 }
 int pmochila::Fo(vector<int>& sol){
-    int fo=0, capacidade=0;
+    int fo=0, capacidade=0,extrapolo=0;
     for(int i=0;i<n;i++){
         //caso o item esteja na mochila
         if(sol[i]==1){
@@ -46,7 +46,8 @@ int pmochila::Fo(vector<int>& sol){
     if(capacidade<=Wmax){
         return fo;
     }else{
-        fo-=M;
+        extrapolo=capacidade-Wmax;
+        fo-=(M)*extrapolo;
         return fo;
     }
 }

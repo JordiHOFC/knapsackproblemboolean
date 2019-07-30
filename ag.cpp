@@ -1,14 +1,17 @@
 #include "ag.h"
 #include<string>
 //construtor
-AlgoritmoGenetico::AlgoritmoGenetico(int tamannhoPop, double probCruza, double probMutacao, string nomearq){
+AlgoritmoGenetico::AlgoritmoGenetico(int tamannhoPop, int ngeracoes,double probCruza, double probMutacao, string nomearq){
     nomeArquivo=nomearq;
     prob = new pmochila(nomearq);
     tamanhopopulacao=tamannhoPop;
+    Ngeracoes=ngeracoes;
     probDeCruzamento=probCruza;
     probDeMutacao=probMutacao;
     populacao=vector<vector<int>>(tamanhopopulacao);
-
+    fitnessPopulacao=vector<int>(tamanhopopulacao);
+    populacaoAux=vector<vector<int>>(tamanhopopulacao);
+    FoBest=0;
 
 }
 
@@ -20,25 +23,28 @@ void AlgoritmoGenetico::gerarPopulacaoInicial(){
     for(int i=0;i<tamanhopopulacao;i++){
         populacao[i]= prob->solucaoAletoria();
     }
+    avaliarPopulacao();
 }
 
-vector<int> AlgoritmoGenetico::selecaoRoleta(){
-    int T=0;//somatorio de todos os fitness 
-    int R;//valor aleatorio entre 0 e T
-    int S=0;//variavel que tera o acumulo dos fitnesse dos individuos 
-    
-    //calculando o valor de T
-    for(int i=0;i<tamanhopopulacao;i++){
-        T+=fitnessPopulacao[i];
+vector<int> AlgoritmoGenetico::selecaoTorneio(){
+    int T=75;//probabilidade de ser escolhido 
+    int R;//valor aleatorio entre 0 e 100
+    int indice1=rand()%prob->n,indice2=rand()%prob->n;//selecionando aleatoriamente dois individuos 
+    vector<int> melhor,pior;
+    //verificando qual individuo é melhor
+    if(fitnessPopulacao[indice1]>fitnessPopulacao[indice2]){
+        melhor=populacao[indice1];
+        pior=populacao[indice2];
+    }else{
+        melhor=populacao[indice2];
+        pior=populacao[indice1];
     }
-    //vamos encontrar o valor que definirá quem sera o individuo escolhido
-    R=rand()%T;
-    //agora iremos selecionar o individuo
-    for(int i=0;i<tamanhopopulacao;i++){
-        S+=fitnessPopulacao[i];
-        if(S>=R){
-            return populacao[i];
-        }
+    //veremos se o melhor ou pior vai ser escolhido
+    R=rand()%100;
+    if(R<T){
+        return melhor;
+    }else{
+        return pior;
     }
 }
 vector<vector<int>> AlgoritmoGenetico:: cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2){
@@ -61,23 +67,22 @@ vector<vector<int>> AlgoritmoGenetico:: cruzamentoPontoCorte(vector<int>&pai1,ve
     filhos[1]=f2;
     return filhos;
 }
-vector<int> AlgoritmoGenetico:: cruzamentoUniformeParametrizado(vector<int>&pai1,vector<int>&pai2){
+vector<int> AlgoritmoGenetico:: cruzamentoUniformeParametrizado(vector<int>& pai1, vector<int>& pai2){
     vector<int> individuo;
-    int moeda;
-    int gene;
+    double moeda;
+    
     for (int i = 0; i < pai1.size(); i++)
     {
-        moeda = rand() % 10;
+        moeda =rand() / (RAND_MAX + 1.0);
         
         if (moeda < probDeCruzamento)
         {
-            gene =pai1[i];
-            individuo.push_back(gene);
+           
+            individuo.push_back(pai1[i]);
         }
         else
         {
-            gene = pai2[i];
-            individuo.push_back(gene);
+            individuo.push_back(pai2[i]);
         }
     }
     
@@ -85,10 +90,10 @@ vector<int> AlgoritmoGenetico:: cruzamentoUniformeParametrizado(vector<int>&pai1
 }
 vector<int> AlgoritmoGenetico::mutacao(vector<int>individuo){
     int indice;//vai receber o indice que será invetido 
-    int r;
-    int Prob=probDeMutacao*100;
-    r=rand()%100;
-    if(r<=Prob){
+    double r;
+    
+    r=rand() / (RAND_MAX + 1.0);
+    if(r<=probDeMutacao){
         indice=rand()%prob->n;
         if(individuo[indice]==0){
             individuo[indice]=1;
@@ -101,4 +106,53 @@ vector<int> AlgoritmoGenetico::mutacao(vector<int>individuo){
         return individuo;
     }
 
+}
+void AlgoritmoGenetico::avaliarPopulacao(){
+    ofstream arq=ofstream("best.txt",ios::app);
+    
+    for(int i=0;i<tamanhopopulacao;i++){
+        fitnessPopulacao[i]=prob->Fo(populacao[i]);
+        if(fitnessPopulacao[i]>=FoBest){
+            FoBest=fitnessPopulacao[i];
+            best=populacao[i];
+            arq<<"Best att -> "<<FoBest<<"instacia -> "<<nomeArquivo<<endl;
+        }
+    }
+    arq.close();
+}
+void AlgoritmoGenetico::imprimirFitnessPop(){
+    cout << "Populacao: [";
+    for (int i = 0; i < fitnessPopulacao.size(); i++)
+    {
+        printf("%d,", fitnessPopulacao[i]);
+    }
+    cout << "]" << endl;
+}
+void AlgoritmoGenetico::cicloGeracional(){
+    vector<vector<int>>pais(2);
+    vector<int>filho(prob->n);
+    int inseridos=0;
+    
+    //gerando a populacao inicial
+    gerarPopulacaoInicial();
+    //agora vamos utilizar os operadores geneticos para evoluir nossos individuos
+    for(int i=0;i<Ngeracoes;i++){
+        //cruzamento e mutacao
+        for(int i=0;i<tamanhopopulacao;i++){
+            pais[0]=selecaoTorneio();
+            pais[1]=selecaoTorneio();
+            filho=cruzamentoUniformeParametrizado(pais[0],pais[1]);
+            filho=mutacao(filho);
+            populacaoAux[inseridos]=filho;
+            inseridos++;
+            filho.clear();
+
+        }
+        inseridos=0;
+        //substituicao geracional
+        populacao=populacaoAux;
+        //avaliar populacao
+        avaliarPopulacao();
+    }
+    imprimirFitnessPop();
 }
