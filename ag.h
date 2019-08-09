@@ -18,6 +18,7 @@ class AlgoritmoGenetico{
     double probDeMutacao;
     
     int Ngeracoes;
+    int tipoCruzamento,tipoMutacao;
     
     vector<int>best;
     double FoBest;
@@ -31,16 +32,17 @@ class AlgoritmoGenetico{
     pmochila *prob;
 
     //construtor
-    AlgoritmoGenetico(int tamannhoPop, int ngeracoes,double probCruza, double probMutacao, string nomearq);
+    AlgoritmoGenetico(int tamannhoPop, int ngeracoes, int tipocruz,int mutacao,double probCruza, double probMutacao, string nomearq);
     //destrutor
     virtual ~AlgoritmoGenetico();
 
     //funcoes 
-    vector<vector<int>> cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2);
+    void cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2);
     vector<int>cruzamentoUniformeParametrizado(vector<int>&pai1,vector<int>&pai2);
-    vector<int>mutacao(vector<int>individuo);
+    vector<int>mutacao(vector<int>&individuo);
     vector<int>selecaoTorneio();
-    void avaliarPopulacao();
+    int selecaoTorneioCP();
+    void avaliarPopulacao(int geracao);
     void gerarPopulacaoInicial();
     void cicloGeracional();
     void imprimirFitnessPop();
