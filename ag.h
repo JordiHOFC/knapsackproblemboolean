@@ -40,7 +40,7 @@ class AlgoritmoGenetico{
     void cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2);
     vector<int>cruzamentoUniformeParametrizado(vector<int>&pai1,vector<int>&pai2);
     vector<int>mutacao(vector<int>&individuo);
-    vector<int>selecaoTorneio();
+    int selecaoTorneio();
     int selecaoTorneioCP();
     void avaliarPopulacao(int geracao);
     void gerarPopulacaoInicial();

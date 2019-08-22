@@ -28,18 +28,18 @@ void AlgoritmoGenetico::gerarPopulacaoInicial(){
     avaliarPopulacao(0);
 }
 
-vector<int> AlgoritmoGenetico::selecaoTorneio(){
+int AlgoritmoGenetico::selecaoTorneio(){
     int T=75;//probabilidade de ser escolhido 
     int R;//valor aleatorio entre 0 e 100
-    int indice1=rand()%prob->n,indice2=rand()%prob->n;//selecionando aleatoriamente dois individuos 
-    vector<int> melhor,pior;
+    int indice1=rand()%populacao.size(),indice2=rand()%populacao.size();//selecionando aleatoriamente dois individuos 
+    int melhor,pior;
     //verificando qual individuo é melhor
     if(fitnessPopulacao[indice1]>fitnessPopulacao[indice2]){
-        melhor=populacao[indice1];
-        pior=populacao[indice2];
+        melhor=indice1;
+        pior=indice2;
     }else{
-        melhor=populacao[indice2];
-        pior=populacao[indice1];
+        melhor=indice2;
+        pior=indice1;
     }
     //veremos se o melhor ou pior vai ser escolhido
     R=rand()%100;
@@ -53,7 +53,7 @@ vector<int> AlgoritmoGenetico::selecaoTorneio(){
 int AlgoritmoGenetico::selecaoTorneioCP(){
     int T=75;//probabilidade de ser escolhido 
     int R;//valor aleatorio entre 0 e 100
-    int indice1=rand()%prob->n,indice2=rand()%prob->n;//selecionando aleatoriamente dois individuos 
+    int indice1=rand()%populacao.size(),indice2=rand()%populacao.size();//selecionando aleatoriamente dois individuos 
     int melhor,pior;
     //verificando qual individuo é melhor
     if(fitnessPopulacao[indice1]>fitnessPopulacao[indice2]){
@@ -74,11 +74,11 @@ int AlgoritmoGenetico::selecaoTorneioCP(){
 void AlgoritmoGenetico:: cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2){
     int ponto;//ponto de corte é o indice que o vetor sera dividido 
     
-    vector<int>f1(prob->n);
-    vector<int>f2(prob->n);
+    vector<int>f1(pai1.size());
+    vector<int>f2(pai2.size());
 
-    ponto=rand()%prob->n;
-    for(int i=0;i<prob->n;i++){
+    ponto=rand()%pai1.size()-1;
+    for(int i=0;i<pai1.size();i++){
         if(i<ponto){
             f1[i]=pai1[i];
             f2[i]=pai2[i];
@@ -89,10 +89,13 @@ void AlgoritmoGenetico:: cruzamentoPontoCorte(vector<int>&pai1,vector<int>&pai2)
     }
     pai1=mutacao(f1);
     pai2=mutacao(f2);
+    f1.clear();
+    f2.clear();
+
     
 }
 vector<int> AlgoritmoGenetico:: cruzamentoUniformeParametrizado(vector<int>& pai1, vector<int>& pai2){
-    vector<int> individuo;
+    vector<int> individuo(pai1.size());
     double moeda;
     
     for (int i = 0; i < pai1.size(); i++)
@@ -102,11 +105,11 @@ vector<int> AlgoritmoGenetico:: cruzamentoUniformeParametrizado(vector<int>& pai
         if (moeda < probDeCruzamento)
         {
            
-            individuo.push_back(pai1[i]);
+            individuo[i]=pai1[i];
         }
         else
         {
-            individuo.push_back(pai2[i]);
+            individuo[i]=pai2[i];
         }
     }
     
@@ -182,7 +185,7 @@ void AlgoritmoGenetico::imprimirFitnessPop(){
 }
 void AlgoritmoGenetico::cicloGeracional(){
    if(tipoCruzamento==1){
-        vector<vector<int>>pais(2);
+        int pai1,pai2;
     
         vector<int>filho(prob->n);
         int inseridos=0;
@@ -193,13 +196,14 @@ void AlgoritmoGenetico::cicloGeracional(){
         for(int i=0;i<Ngeracoes;i++){
             //cruzamento e mutacao
             for(int i=0;i<tamanhopopulacao;i++){
-                pais[0]=selecaoTorneio();
-                pais[1]=selecaoTorneio();
-                filho=cruzamentoUniformeParametrizado(pais[0],pais[1]);
+                pai1=selecaoTorneio();
+                pai2=selecaoTorneio();
+                filho=cruzamentoUniformeParametrizado(populacao[pai1],populacao[pai2]);
                 filho=mutacao(filho);
                 populacaoAux[inseridos]=filho;
                 inseridos++;
                 filho.clear();
+               
 
             }
             inseridos=0;

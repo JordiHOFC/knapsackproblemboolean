@@ -9,7 +9,7 @@ int main(){
     //string nomearquivo="knapPI_1_100_1000_1";
     //string nomearquivo="f10_l-d_kp_20_879";
     //string nomearquivo="knapPI_3_10000_1000_1";
-    string nomearquivo="f8_l-d_kp_23_10000";
+    string nomearquivo="knapPI_3_2000_1000_1";
     
     
 
